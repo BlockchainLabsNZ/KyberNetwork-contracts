@@ -1,4 +1,4 @@
-pragma solidity 0.4.18;
+pragma solidity ^0.4.18;
 
 
 import "./ERC20Interface.sol";
@@ -33,6 +33,7 @@ contract KyberNetwork is Withdrawable, Utils {
 
     event EtherReceival(address indexed sender, uint amount);
 
+    /// @dev If the caller of this function is a reserve then Ether is accepted and an event is emitted
     /* solhint-disable no-complex-fallback */
     function() public payable {
         require(isReserve[msg.sender]);
@@ -45,8 +46,8 @@ contract KyberNetwork is Withdrawable, Utils {
     /// @notice use token address ETH_TOKEN_ADDRESS for ether
     /// @dev makes a trade between src and dest token and send dest token to destAddress
     /// @param src Src token
-    /// @param srcAmount amount of src tokens
-    /// @param dest   Destination token
+    /// @param src Amount amount of src tokens
+    /// @param dest Destination token
     /// @param destAddress Address to send tokens to
     /// @param maxDestAmount A limit on the amount of dest tokens
     /// @param minConversionRate The minimal conversion rate. If actual rate is lower, trade is canceled.
@@ -152,6 +153,13 @@ contract KyberNetwork is Withdrawable, Utils {
         ListReservePairs(reserve, src, dest, add);
     }
 
+    /// @dev Sets the addresses for the deployed whitelist, expectedRate and feeBurner contracts.
+    ///      as well as setting the max gas price, and negligible rate difference
+    /// @param _whiteList TODO
+    /// @param _expectedRate TODO
+    /// @param _feeBurner TODO
+    /// @param _maxGasPrice TODO
+    /// @param _negligibleRateDiff TODO
     function setParams(
         WhiteListInterface    _whiteList,
         ExpectedRateInterface _expectedRate,
@@ -166,7 +174,7 @@ contract KyberNetwork is Withdrawable, Utils {
         require(_feeBurner != address(0));
         require(_expectedRate != address(0));
         require(_negligibleRateDiff <= 100 * 100); // at most 100%
-        
+
         whiteListContract = _whiteList;
         expectedRateContract = _expectedRate;
         feeBurnerContract = _feeBurner;
@@ -174,6 +182,9 @@ contract KyberNetwork is Withdrawable, Utils {
         negligibleRateDiff = _negligibleRateDiff;
     }
 
+    /// @dev Enables the kyber network, requires whitelist, feeburner, and expectedRate contracts
+    ///      to be deployed and set
+    /// @param _enable Enabled state
     function setEnable(bool _enable) public onlyAdmin {
         if (_enable) {
             require(whiteListContract != address(0));
@@ -183,6 +194,8 @@ contract KyberNetwork is Withdrawable, Utils {
         enabled = _enable;
     }
 
+    /// @param field Info field to be set
+    /// @param value Value to be set
     function setInfo(bytes32 field, uint value) public onlyOperator {
         info[field] = value;
     }
@@ -202,6 +215,7 @@ contract KyberNetwork is Withdrawable, Utils {
 
     /// @dev get the balance of a user.
     /// @param token The token type
+    /// @param user Address to get the balance of
     /// @return The balance
     function getBalance(ERC20 token, address user) public view returns(uint) {
         if (token == ETH_TOKEN_ADDRESS)
@@ -258,6 +272,11 @@ contract KyberNetwork is Withdrawable, Utils {
     }
     /* solhint-enable code-complexity */
 
+    /// @dev TODO
+    /// @param src Source token
+    /// @param dest Destination token
+    /// @return expectedRate TODO
+    /// @return slippageRate TODO
     function getExpectedRate(ERC20 src, ERC20 dest, uint srcQty)
         public view
         returns (uint expectedRate, uint slippageRate)
@@ -266,10 +285,20 @@ contract KyberNetwork is Withdrawable, Utils {
         return expectedRateContract.getExpectedRate(src, dest, srcQty);
     }
 
+    /// @dev Get the cap for a user
+    /// @param user Address
     function getUserCapInWei(address user) public view returns(uint) {
         return whiteListContract.getUserCapInWei(user);
     }
 
+    /// @dev TODO
+    /// @param src TODO
+    /// @param srcAmount TODO
+    /// @param dest TODO
+    /// @param destAddress TODO
+    /// @param maxDestAmount TODO
+    /// @param minConversionRate TODO
+    /// @param walletId TODO
     function doTrade(
         ERC20 src,
         uint srcAmount,
@@ -375,10 +404,20 @@ contract KyberNetwork is Withdrawable, Utils {
         return true;
     }
 
+    /// @dev TODO
+    /// @param src Source token
+    /// @param dest Dest token
+    /// @param srcAmount TODO
+    /// @param rate TODO
     function calcDestAmount(ERC20 src, ERC20 dest, uint srcAmount, uint rate) internal view returns(uint) {
         return calcDstQty(srcAmount, getDecimals(src), getDecimals(dest), rate);
     }
 
+    /// @dev TODO
+    /// @param src Source token
+    /// @param dest Dest token
+    /// @param destAmount TODO
+    /// @param rate TODO
     function calcSrcAmount(ERC20 src, ERC20 dest, uint destAmount, uint rate) internal view returns(uint) {
         return calcSrcQty(destAmount, getDecimals(src), getDecimals(dest), rate);
     }

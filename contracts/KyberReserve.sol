@@ -1,4 +1,4 @@
-pragma solidity 0.4.18;
+pragma solidity ^0.4.18;
 
 
 import "./ERC20Interface.sol";
@@ -18,6 +18,10 @@ contract KyberReserve is KyberReserveInterface, Withdrawable, Utils {
     SanityRatesInterface public sanityRatesContract;
     mapping(bytes32=>bool) public approvedWithdrawAddresses; // sha3(token,address)=>bool
 
+    /// @dev Constructor for the KyberReserve contract
+    /// @param _kyberNetwork Address of the KyberNetwork contract
+    /// @param _ratesContract Address of contract implementing the ConversionRates interface
+    /// @param _admin Admin Address
     function KyberReserve(address _kyberNetwork, ConversionRatesInterface _ratesContract, address _admin) public {
         require(_admin != address(0));
         require(_ratesContract != address(0));
@@ -30,6 +34,7 @@ contract KyberReserve is KyberReserveInterface, Withdrawable, Utils {
 
     event DepositToken(ERC20 token, uint amount);
 
+    /// @dev The fallback function accepts ether and emits an event DepositToken
     function() public payable {
         DepositToken(ETH_TOKEN_ADDRESS, msg.value);
     }
@@ -43,6 +48,13 @@ contract KyberReserve is KyberReserveInterface, Withdrawable, Utils {
         address destAddress
     );
 
+    /// @dev Validates that a trade is valid, and then makes the trade
+    /// @param srcToken TODO
+    /// @param srcAmount TODO
+    /// @param destToken TODO
+    /// @param destAddress TODO
+    /// @param conversionRate TODO
+    /// @param validate TODO
     function trade(
         ERC20 srcToken,
         uint srcAmount,
@@ -65,6 +77,7 @@ contract KyberReserve is KyberReserveInterface, Withdrawable, Utils {
 
     event TradeEnabled(bool enable);
 
+    /// @dev Enables trading with the reserve
     function enableTrade() public onlyAdmin returns(bool) {
         tradeEnabled = true;
         TradeEnabled(true);
@@ -72,6 +85,7 @@ contract KyberReserve is KyberReserveInterface, Withdrawable, Utils {
         return true;
     }
 
+    /// @dev Disables trading with the reserve
     function disableTrade() public onlyAlerter returns(bool) {
         tradeEnabled = false;
         TradeEnabled(false);
@@ -81,6 +95,10 @@ contract KyberReserve is KyberReserveInterface, Withdrawable, Utils {
 
     event WithdrawAddressApproved(ERC20 token, address addr, bool approve);
 
+    /// @dev TODO
+    /// @param token Address of the ERC20 token
+    /// @param addr Address to be approved
+    /// @param approve Approval Status
     function approveWithdrawAddress(ERC20 token, address addr, bool approve) public onlyAdmin {
         approvedWithdrawAddresses[keccak256(token, addr)] = approve;
         WithdrawAddressApproved(token, addr, approve);
@@ -90,6 +108,10 @@ contract KyberReserve is KyberReserveInterface, Withdrawable, Utils {
 
     event WithdrawFunds(ERC20 token, uint amount, address destination);
 
+    /// @dev Withdraws token or ETH to an approved address
+    /// @param token ERC20 Token to be withdrawn
+    /// @param token amount Amount to be withdrawn
+    /// @param token destination Address that tokens should be transferred to
     function withdraw(ERC20 token, uint amount, address destination) public onlyOperator returns(bool) {
         require(approvedWithdrawAddresses[keccak256(token, destination)]);
 
@@ -106,6 +128,10 @@ contract KyberReserve is KyberReserveInterface, Withdrawable, Utils {
 
     event SetContractAddresses(address network, address rate, address sanity);
 
+    /// @dev TODO
+    /// @param _kyberNetwork TODO
+    /// @param _conversionRates TODO
+    /// @param _sanityRates TODO
     function setContracts(address _kyberNetwork, ConversionRatesInterface _conversionRates, SanityRatesInterface _sanityRates)
         public
         onlyAdmin
@@ -123,6 +149,9 @@ contract KyberReserve is KyberReserveInterface, Withdrawable, Utils {
     ////////////////////////////////////////////////////////////////////////////
     /// status functions ///////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
+
+    /// @dev TODO
+    /// @param token Address of the Token you want the balance of
     function getBalance(ERC20 token) public view returns(uint) {
         if (token == ETH_TOKEN_ADDRESS)
             return this.balance;
@@ -130,6 +159,11 @@ contract KyberReserve is KyberReserveInterface, Withdrawable, Utils {
             return token.balanceOf(this);
     }
 
+    /// @dev TODO
+    /// @param src Source ERC20 Token
+    /// @param dest Destination ERC20 Token
+    /// @param srcQty TODO
+    /// @param rate TODO
     function getDestQty(ERC20 src, ERC20 dest, uint srcQty, uint rate) public view returns(uint) {
         uint dstDecimals = getDecimals(dest);
         uint srcDecimals = getDecimals(src);
@@ -137,6 +171,11 @@ contract KyberReserve is KyberReserveInterface, Withdrawable, Utils {
         return calcDstQty(srcQty, srcDecimals, dstDecimals, rate);
     }
 
+    /// @dev TODO
+    /// @param src Source ERC20 Token
+    /// @param dest Destination ERC20 Token
+    /// @param dstQty TODO
+    /// @param rate TODO
     function getSrcQty(ERC20 src, ERC20 dest, uint dstQty, uint rate) public view returns(uint) {
         uint dstDecimals = getDecimals(dest);
         uint srcDecimals = getDecimals(src);
@@ -144,6 +183,11 @@ contract KyberReserve is KyberReserveInterface, Withdrawable, Utils {
         return calcSrcQty(dstQty, srcDecimals, dstDecimals, rate);
     }
 
+    /// @dev Gets the conversion rate between to ERC20 Tokens (or ETH) at a particular block number
+    /// @param src Source ERC20 Token
+    /// @param dest Destination ERC20 Token
+    /// @param srcQty Quantity of tokens to be converted from
+    /// @param blockNumber Rate will be retrieved at this blocknumber
     function getConversionRate(ERC20 src, ERC20 dest, uint srcQty, uint blockNumber) public view returns(uint) {
         ERC20 token;
         bool  buy;

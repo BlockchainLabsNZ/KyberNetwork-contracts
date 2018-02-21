@@ -4,7 +4,7 @@ pragma solidity ^0.4.18;
 import "../ERC20Interface.sol";
 
 
-interface mockERC20 {
+contract mockERC20 {
     function totalSupply() public view returns (uint supply);
     function balanceOf(address _owner) public view returns (uint balance);
     function transfer(address _to, uint _value) public returns (bool success);

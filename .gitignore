@@ -1,0 +1,6 @@
+node_modules
+build/*
+compiled/*
+coverage/*
+coverage.json
+flattened/*

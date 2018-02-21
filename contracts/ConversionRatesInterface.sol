@@ -1,10 +1,10 @@
-pragma solidity 0.4.18;
+pragma solidity ^0.4.18;
 
 
 import "./ERC20Interface.sol";
 
 
-interface ConversionRatesInterface {
+contract ConversionRatesInterface {
 
     function recordImbalance(
         ERC20 token,

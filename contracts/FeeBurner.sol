@@ -1,4 +1,4 @@
-pragma solidity 0.4.18;
+pragma solidity ^0.4.18;
 
 
 import "./ERC20Interface.sol";
@@ -7,12 +7,12 @@ import "./Withdrawable.sol";
 import "./Utils.sol";
 
 
-interface BurnableToken {
+contract BurnableToken {
     function transferFrom(address _from, address _to, uint _value) public returns (bool);
     function burnFrom(address _from, uint256 _value) public returns (bool);
 }
 
-
+/// @title Burns fees for exchanges with the KyberNetwork
 contract FeeBurner is Withdrawable, FeeBurnerInterface, Utils {
 
     mapping(address=>uint) public reserveFeesInBps;
