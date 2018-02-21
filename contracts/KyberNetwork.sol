@@ -46,7 +46,7 @@ contract KyberNetwork is Withdrawable, Utils {
     /// @notice use token address ETH_TOKEN_ADDRESS for ether
     /// @dev makes a trade between src and dest token and send dest token to destAddress
     /// @param src Src token
-    /// @param src Amount amount of src tokens
+    /// @param srcAmount amount of src tokens
     /// @param dest Destination token
     /// @param destAddress Address to send tokens to
     /// @param maxDestAmount A limit on the amount of dest tokens
