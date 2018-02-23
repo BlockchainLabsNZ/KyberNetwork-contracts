@@ -1,6 +1,11 @@
 pragma solidity ^0.4.18;
 
 
+/**
+ * @title PermissionGroups
+ * @dev WARN all the logic is loaded in contracts even when they only use a portion of the code.
+ * @dev SUGGESTION have the logic split into diferent files under one folder and only request what is needed.
+ */
 contract PermissionGroups {
 
     address public admin;
@@ -30,10 +35,18 @@ contract PermissionGroups {
         _;
     }
 
+    /**
+     * @notice Getter for operators.
+     * @returns `operatorsGroup` array.
+     */
     function getOperators () external view returns(address[]) {
         return operatorsGroup;
     }
 
+    /**
+     * @notice Getter for alerters.
+     * @returns `alertersGroup` array.
+     */
     function getAlerters () external view returns(address[]) {
         return alertersGroup;
     }
@@ -41,7 +54,9 @@ contract PermissionGroups {
     event TransferAdminPending(address pendingAdmin);
 
     /**
-     * @dev Allows the current admin to set the pendingAdmin address.
+     * @notice Allows the current admin to set the pendingAdmin address.
+     * @dev this is part of a two step process and `pendingAdmin` must claim ownership, is more secure but costs more gas.
+     * @dev Can only be executed by `admin`.
      * @param newAdmin The address to transfer ownership to.
      */
     function transferAdmin(address newAdmin) public onlyAdmin {
@@ -51,7 +66,9 @@ contract PermissionGroups {
     }
 
     /**
-     * @dev Allows the current admin to set the admin in one tx. Useful initial deployment.
+     * @notice Allows the current admin to set the admin in one tx. Useful initial deployment.
+     * @dev This is a faster, cheaper, and less secure version of `transferAdmin` that doesn't require claiming.
+     * @dev Can only be executed by `admin`.
      * @param newAdmin The address to transfer ownership to.
      */
     function transferAdminQuickly(address newAdmin) public onlyAdmin {
@@ -64,7 +81,9 @@ contract PermissionGroups {
     event AdminClaimed( address newAdmin, address previousAdmin);
 
     /**
-     * @dev Allows the pendingAdmin address to finalize the change admin process.
+     * @notice Allows the pendingAdmin address to finalize the change admin process.
+     * @dev This is the last part of a two step process after `transferAdmin`.
+     * @dev Can only be executed by `pendingAdmin`.
      */
     function claimAdmin() public {
         require(pendingAdmin == msg.sender);
@@ -75,6 +94,11 @@ contract PermissionGroups {
 
     event AlerterAdded (address newAlerter, bool isAdd);
 
+    /**
+     * @notice Adds an address to the alertersGroup.
+     * @dev Can only be executed by `admin`.
+     * @param newAlerter Address to be added.
+     */
     function addAlerter(address newAlerter) public onlyAdmin {
         require(!alerters[newAlerter]); // prevent duplicates.
         require(alertersGroup.length < MAX_GROUP_SIZE);
@@ -84,6 +108,11 @@ contract PermissionGroups {
         alertersGroup.push(newAlerter);
     }
 
+    /**
+     * @notice Removes an address from the alertersGroup.
+     * @dev Can only be executed by `admin`.
+     * @param alerter Address to be removed.
+     */
     function removeAlerter (address alerter) public onlyAdmin {
         require(alerters[alerter]);
         alerters[alerter] = false;
@@ -100,6 +129,11 @@ contract PermissionGroups {
 
     event OperatorAdded(address newOperator, bool isAdd);
 
+    /**
+     * @notice Adds an address to the operatorsGroup.
+     * @dev Can only be executed by `admin`.
+     * @param newOperator Address to be added.
+     */
     function addOperator(address newOperator) public onlyAdmin {
         require(!operators[newOperator]); // prevent duplicates.
         require(operatorsGroup.length < MAX_GROUP_SIZE);
@@ -109,6 +143,11 @@ contract PermissionGroups {
         operatorsGroup.push(newOperator);
     }
 
+    /**
+     * @notice Removes an address from the operatorsGroup.
+     * @dev Can only be executed by `admin`.
+     * @param operator Address to be removed.
+     */
     function removeOperator (address operator) public onlyAdmin {
         require(operators[operator]);
         operators[operator] = false;
