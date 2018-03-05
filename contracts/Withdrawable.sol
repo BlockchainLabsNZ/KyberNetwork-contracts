@@ -17,7 +17,10 @@ contract Withdrawable is PermissionGroups {
 
     /**
      * @dev Withdraw all ERC20 compatible tokens
+     * @dev Only `admin` can call this function.
      * @param token ERC20 The address of the token contract
+     * @param amount Amount to withdraw
+     * @param sendTo Address that will recieve the withdrawn Token
      */
     function withdrawToken(ERC20 token, uint amount, address sendTo) external onlyAdmin {
         require(token.transfer(sendTo, amount));
@@ -28,6 +31,9 @@ contract Withdrawable is PermissionGroups {
 
     /**
      * @dev Withdraw Ethers
+     * @dev Only `admin` can call this function.
+     * @param amount Amount to withdraw
+     * @param sendTo Address that will recieve the withdrawn Eth
      */
     function withdrawEther(uint amount, address sendTo) external onlyAdmin {
         sendTo.transfer(amount);
