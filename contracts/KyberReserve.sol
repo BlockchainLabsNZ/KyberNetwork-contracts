@@ -48,13 +48,14 @@ contract KyberReserve is KyberReserveInterface, Withdrawable, Utils {
         address destAddress
     );
 
-    /// @dev Validates that a trade is valid, and then makes the trade
-    /// @param srcToken TODO
-    /// @param srcAmount TODO
-    /// @param destToken TODO
-    /// @param destAddress TODO
-    /// @param conversionRate TODO
-    /// @param validate TODO
+    /// @dev Validates that a trade is valid, and then makes the trade. This function
+    ///      can only be called by the KyberNetwork contract.
+    /// @param srcToken ERC20 Token or ETH to be traded from
+    /// @param srcAmount Amount of tokens or ETH being traded from
+    /// @param destToken ERC20 Token or ETH to be traded to
+    /// @param destAddress Address that traded tokens or ETH will be sent to
+    /// @param conversionRate Conversion rate between src and dest token/eth
+    /// @param validate Whether the trade has been validated by the network already
     function trade(
         ERC20 srcToken,
         uint srcAmount,
